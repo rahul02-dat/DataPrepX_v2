@@ -1,0 +1,111 @@
+version: "3.9"
+
+# NOTE: Ollama is intentionally NOT a compose service. See docs/adr/0001-ollama-native-host.md.
+# It runs natively on the host (macOS) and is reached via host.docker.internal:11434 from
+# agent-orchestrator. This deviates from CLAUDE.md's original listing of ollama as an in-stack
+# service — logged as an open decision pending sign-off.
+
+networks:
+  dataprepx-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dataprepx
+      POSTGRES_PASSWORD: dataprepx_dev_only
+      POSTGRES_DB: dataprepx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataprepx"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dataprepx-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dataprepx-net
+
+  gateway-go:
+    build:
+      context: ./services/gateway-go
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ML_ENGINE_URL=http://ml-engine-py:8000
+      - PORT=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dataprepx-net
+
+  ml-engine-py:
+    build:
+      context: ./services/ml-engine-py
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://dataprepx:dataprepx_dev_only@postgres:5432/dataprepx
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dataprepx-net
+
+  agent-orchestrator:
+    build:
+      context: ./services/agent-orchestrator
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8100"
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - DATABASE_URL=postgresql://dataprepx:dataprepx_dev_only@postgres:5432/dataprepx
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dataprepx-net
+
+  frontend-react:
+    build:
+      context: ./services/frontend-react
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_GATEWAY_URL=http://localhost:8080
+    depends_on:
+      - gateway-go
+    networks:
+      - dataprepx-net

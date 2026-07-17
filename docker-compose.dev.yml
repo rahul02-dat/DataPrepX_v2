@@ -1,0 +1,30 @@
+version: "3.9"
+
+# Dev-only overrides: hot reload and exposed debug ports.
+# Per CLAUDE.md §8: gate thresholds and RL hyperparameters must never diverge between dev and
+# prod here — those live in versioned YAML config, not compose env vars. This file only touches
+# developer-experience concerns (reload, volume mounts, debug ports).
+
+services:
+  gateway-go:
+    volumes:
+      - ./services/gateway-go:/app
+    command: ["air"] # placeholder: live-reload tool, wired properly when gateway has real code
+    environment:
+      - GIN_MODE=debug
+
+  ml-engine-py:
+    volumes:
+      - ./services/ml-engine-py:/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  agent-orchestrator:
+    volumes:
+      - ./services/agent-orchestrator:/app
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8100", "--reload"]
+
+  frontend-react:
+    volumes:
+      - ./services/frontend-react:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
