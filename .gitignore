@@ -1,7 +1,8 @@
 dpx/
 docs/
-/services/ml-engine/dpxpy/
+dpxpy/
 __pycache__/
 .pytest_cache/
 .DS_Store
-/services/agent-orchestrator/dpxag
+dpxag/
+node_modules/
