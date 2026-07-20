@@ -26,16 +26,16 @@ func NewStore(pool *pgxpool.Pool) *Store {
 func (s *Store) CreateRun(ctx context.Context, sub JobSubmission) (*Run, error) {
 	var run Run
 	query := `
-		INSERT INTO runs (dataset_id, status)
-		VALUES ($1, $2)
-		RETURNING id, dataset_id, status, created_at
+		INSERT INTO runs (dataset_id, status, job_type)
+		VALUES ($1, $2, $3)
+		RETURNING id, dataset_id, status, job_type, created_at
 	`
-	err := s.pool.QueryRow(ctx, query, sub.DatasetID, string(StatusQueued)).
-		Scan(&run.ID, &run.DatasetID, &run.Status, &run.CreatedAt)
+	err := s.pool.QueryRow(ctx, query, sub.DatasetID, string(StatusQueued), string(sub.JobType)).
+		Scan(&run.ID, &run.DatasetID, &run.Status, &run.JobType, &run.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("insert run: %w", err)
 	}
-	run.JobType = sub.JobType
+
 	return &run, nil
 }
 
@@ -43,11 +43,11 @@ func (s *Store) CreateRun(ctx context.Context, sub JobSubmission) (*Run, error) 
 func (s *Store) GetRun(ctx context.Context, runID string) (*Run, error) {
 	var run Run
 	query := `
-		SELECT id, dataset_id, status, created_at, started_at, finished_at
+		SELECT id, dataset_id, job_type, status, created_at, started_at, finished_at
 		FROM runs WHERE id = $1
 	`
 	err := s.pool.QueryRow(ctx, query, runID).
-		Scan(&run.ID, &run.DatasetID, &run.Status, &run.CreatedAt, &run.StartedAt, &run.FinishedAt)
+		Scan(&run.ID, &run.DatasetID, &run.JobType, &run.Status, &run.CreatedAt, &run.StartedAt, &run.FinishedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get run: %w", err)
 	}
