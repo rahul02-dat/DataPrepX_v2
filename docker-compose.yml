@@ -55,6 +55,7 @@ services:
     environment:
       - ML_ENGINE_URL=http://ml-engine:8000
       - PORT=8080
+      - DATABASE_URL=postgresql://dataprepx:dataprepx_dev_only@postgres:5432/dataprepx
     depends_on:
       postgres:
         condition: service_healthy

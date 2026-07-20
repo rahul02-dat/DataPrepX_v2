@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dataprepx.internal/schemas/job_status.schema.json",
+  "title": "DataPrepXJobStatus",
+  "description": "WebSocket status message pushed by gateway-go to frontend clients. State transitions per CLAUDE.md §5.7: queued -> running -> gate-check -> optimizing -> done/failed. Phase 1's noop job only exercises queued -> running -> done.",
+  "type": "object",
+  "required": ["run_id", "status", "timestamp"],
+  "properties": {
+    "run_id": { "type": "string", "format": "uuid" },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "gate-check", "optimizing", "done", "failed"]
+    },
+    "message": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

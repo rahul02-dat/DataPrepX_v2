@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dataprepx.internal/schemas/job.schema.json",
+  "title": "DataPrepXJob",
+  "description": "Canonical job submission contract shared across gateway-go, ml-engine-py, and agent-orchestrator. Single source of truth per CLAUDE.md §7 (cross-service contracts defined once).",
+  "type": "object",
+  "required": ["job_type", "dataset_id"],
+  "properties": {
+    "job_type": {
+      "type": "string",
+      "enum": ["noop", "full_pipeline"],
+      "description": "Phase 1 only implements 'noop'. 'full_pipeline' is reserved for later phases and must not be accepted by gateway-go until the corresponding phase lands."
+    },
+    "dataset_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "References datasets.id. Must exist before a job can be submitted."
+    },
+    "config": {
+      "type": "object",
+      "description": "Job-specific configuration. Empty for noop jobs. Structure for full_pipeline is defined in later phases, not here.",
+      "default": {}
+    }
+  },
+  "additionalProperties": false
+}

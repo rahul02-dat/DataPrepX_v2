@@ -15,6 +15,13 @@ migrate:
 migrate-down:
 	migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)" down 1
 
+sync-schemas:
+	cp shared/schemas/*.json services/gateway-go/internal/jobs/schemas/
+
+check-schema-sync:
+	git diff --exit-code services/gateway-go/internal/jobs/schemas/ || \
+	(echo "Error: gateway-go's embedded schema copy is out of sync with shared/schemas/. Run 'make sync-schemas' and commit." && exit 1)
+
 test: test-go test-py
 
 test-go:

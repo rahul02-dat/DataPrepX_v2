@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS runs (
     git_sha TEXT,
     config_hash TEXT,
     status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     started_at TIMESTAMPTZ,
     finished_at TIMESTAMPTZ
 );
