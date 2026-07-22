@@ -1,11 +1,15 @@
 [project]
-name = "dataprepx-agent-orchestrator"
+name = "dataprepx-ml-engine"
 version = "0.0.1"
-description = "DataPrepX v2 bounded RAG summarizer (LangGraph + Ollama client)"
+description = "DataPrepX v2 ML engine: pipeline core (validation gates, lineage) + Celery tasks"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "psycopg2-binary>=2.9",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -25,7 +29,7 @@ line-length = 100
 target-version = ["py311"]
 
 [tool.setuptools]
-py-modules = ["main"]
+packages = ["app", "app.pipeline"]
 
 [build-system]
 requires = ["setuptools>=68"]

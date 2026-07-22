@@ -12,6 +12,7 @@ networks:
 volumes:
   postgres-data:
   redis-data:
+  uploads-data:
 
 services:
   postgres:
@@ -56,6 +57,8 @@ services:
       - ML_ENGINE_URL=http://ml-engine:8000
       - PORT=8080
       - DATABASE_URL=postgresql://dataprepx:dataprepx_dev_only@postgres:5432/dataprepx
+    volumes:
+      - uploads-data:/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +76,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://dataprepx:dataprepx_dev_only@postgres:5432/dataprepx
       - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - uploads-data:/data/uploads
     depends_on:
       postgres:
         condition: service_healthy

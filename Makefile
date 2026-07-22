@@ -4,7 +4,8 @@ DATABASE_URL ?= postgresql://dataprepx:dataprepx_dev_only@localhost:5432/datapre
 MIGRATIONS_DIR = infra/postgres/migrations
 
 up:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+ 	# docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+    GIT_SHA=$$(git rev-parse HEAD) docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 down:
 	docker compose down
