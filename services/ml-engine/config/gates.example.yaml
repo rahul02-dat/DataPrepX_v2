@@ -1,0 +1,17 @@
+# Example Phase 2 gate configuration.
+# Per CLAUDE.md §7 cross-cutting concerns: thresholds are versioned config, never hardcoded.
+# Copy this file, adjust for your dataset, and pass its path via `cli.py gate-check --config`.
+
+max_null_rate:
+  threshold: 0.3
+  # columns: [age, income]   # omit to check every column
+
+schema_conformance:
+  reference_schema:
+    age: i        # int
+    income: f     # float
+    category: O   # object/string
+
+drift:
+  psi_threshold: 0.2
+  # columns: [age, income]   # omit to auto-select numeric columns shared with the reference
